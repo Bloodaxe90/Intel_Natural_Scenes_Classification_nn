@@ -51,7 +51,7 @@ def copy_images(image_dir: Path, dest_dir: Path, file_type: str, num_classes: in
 
 
 def get_smaller_set(root_dir: Path, file_type: str, num_classes: int) -> Path:
-  new_root_dir = Path("/Users/eric/PycharmProjects/Intel_Natural_Scenes_Classification_nn/small_data")
+  new_root_dir = Path("/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/small_data")
   train_dir = new_root_dir / "train"
   test_dir = new_root_dir / "test"
   prediction_dir = new_root_dir / "pred"
@@ -65,5 +65,13 @@ def get_smaller_set(root_dir: Path, file_type: str, num_classes: int) -> Path:
       shutil.copy2(image, prediction_dir)
 
   return new_root_dir
+
+def load_init_files():
+    root_path = Path(
+        "/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/data/IntelImageClassification.zip")
+    extract_path = Path("/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/data")
+
+    expands_zip(root_path, extract_path)
+    get_smaller_set(extract_path, "jpg", 4)
 
 

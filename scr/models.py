@@ -1,41 +1,53 @@
 from torch import nn
 
-class SmallModelCNN(nn.Module):
-  def __init__(self, input_neurons: int, hidden_layers: int, neurons_per_hidden_layer: list[int], output_neurons: int, image_size: tuple[int, int]):
+class CNNModel(nn.Module):
+  def __init__(self, input_neurons: int, num_hidden_layers: int, neurons_per_hidden_layer: list[int], output_neurons: int, output_block_divisor: int, image_size: tuple[int, int]):
     super().__init__()
-    assert hidden_layers +1 == len(neurons_per_hidden_layer), "Number of items in the list of neurons per hidden layer must be 1 greater than the number hidden layers"
+    assert num_hidden_layers +1 == len(neurons_per_hidden_layer), "Number of items in the list of neurons per hidden layer must be 1 greater than the number hidden layers"
 
-    self.input_neurons = input_neurons
-    self.hidden_layers = hidden_layers
     self.neurons_per_hidden_layer = neurons_per_hidden_layer
-    self.output_neurons = output_neurons
-
-    self.hidden_neurons = neurons_per_hidden_layer[0]
 
     self.input_conv_block = nn.Sequential(
-        nn.Conv2d(in_channels= self.input_neurons, out_channels=self.hidden_neurons, kernel_size= 3, stride= 1, padding= 1),
+        nn.Conv2d(in_channels= input_neurons, out_channels=self.neurons_per_hidden_layer[0], kernel_size= 3, stride= 1, padding= 1),
+        nn.BatchNorm2d(self.neurons_per_hidden_layer[0]),
         nn.ReLU(),
         nn.MaxPool2d(kernel_size= 2, stride= 2)
     )
 
-    self.hidden_conv_block = nn.Sequential(
-        nn.Conv2d(in_channels= self.hidden_neurons, out_channels=self.hidden_neurons, kernel_size= 3, stride= 1, padding= 1),
+    self.hidden_blocks = nn.ModuleList()
+    for i in range(1, num_hidden_layers +1):
+        self.hidden_blocks.append(nn.Sequential(
+            nn.Conv2d(in_channels=self.neurons_per_hidden_layer[i-1], out_channels=self.neurons_per_hidden_layer[i], kernel_size=3, stride=1,
+                      padding=1),
+            nn.BatchNorm2d(self.neurons_per_hidden_layer[i]),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        ))
+
+
+    flatten_in_neurons: int = self.get_linear_in_neurons(image_size)
+    flatten_out_neurons: int = flatten_in_neurons // output_block_divisor
+    self.flatten_block = nn.Sequential(nn.Flatten(),
+        nn.Linear(in_features= flatten_in_neurons, out_features= flatten_out_neurons),
+        nn.BatchNorm1d(flatten_out_neurons),
         nn.ReLU(),
-        nn.MaxPool2d(kernel_size= 2, stride= 2)
+        nn.Dropout(p=0.5),
     )
 
-    num_pool_layers = 1 + hidden_layers
-    num = image_size[0] / (2**num_pool_layers)
-    linear_hidden_neurons: int = self.hidden_neurons * int((num**2))
-    self.output_linear_block = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(in_features= linear_hidden_neurons, out_features= self.output_neurons),
+    self.output_block = nn.Sequential(
+        nn.Linear(in_features=flatten_out_neurons, out_features=output_neurons),
         nn.Softmax(dim=1)
     )
 
+  def get_linear_in_neurons(self, image_size: tuple[int, int]) -> int:
+    height, width = image_size
+    for _ in range(len(self.hidden_blocks) + 1):
+        height //= 2
+        width //= 2
+    return self.neurons_per_hidden_layer[-1] * height * width
+
   def forward(self, x):
     x = self.input_conv_block(x)
-    for i in range(1, self.hidden_layers +1):
-      x = self.hidden_conv_block(x)
-      self.hidden_neurons = self.neurons_per_hidden_layer[i]
-    return self.output_linear_block(x)
+    for hidden_layer in self.hidden_blocks:
+      x = hidden_layer(x)
+    return self.output_block(self.flatten_block(x))

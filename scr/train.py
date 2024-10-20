@@ -2,66 +2,110 @@ import os
 from pathlib import Path
 
 import torch.cuda
+from torchinfo import summary
 from torchvision import transforms
+from timeit import default_timer as timer
+from scr import engine, data_setup, models, utils
+from scr.early_stopping import EarlyStopping
 
-from scr import engine, data_setup, models
-from scr.models import SmallModelCNN
+
+class Trainer:
+
+    def __init__(self, epochs: int, batch_size: int, hidden_layers: int, neurons_per_hidden_layer: list[int], leaning_rate: float):
+        utils.set_seed(42)
+
+        self.device = utils.get_device()
+        print(f"Device: {self.device}")
+
+        #Hyper Parameters
+        self.EPOCHS: int = epochs
+        self.BATCH_SIZE: int = batch_size
+        self.HIDDEN_LAYERS: int = hidden_layers
+        self.NEURONS_PER_HIDDEN_LAYER: list[int] = neurons_per_hidden_layer
+        self.LEARNING_RATE: float = leaning_rate
+
+
+        self.WORKERS = os.cpu_count() if self.device == "cpu" else torch.cuda.device_count()
+        print(f"Number of workers: {self.WORKERS}")
+        self.image_size: tuple[int, int] = (128, 128)
+
+        self.train_transform = transforms.Compose([
+            transforms.Resize(self.image_size),
+            transforms.ToTensor()
+        ])
+
+        self.test_transform = transforms.Compose([
+            transforms.Resize(self.image_size),
+            transforms.ToTensor()
+        ])
+
+        root_path = Path(
+            "/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/data")
+        train_path = root_path / "seg_train/seg_train"
+        test_path = root_path / "seg_test/seg_test"
+
+        self.train_dataloader, self.test_dataloader, self.classes = data_setup.create_dataloaders(train_path= train_path,
+                                                                                   test_path=test_path,
+                                                                                   train_transform= self.train_transform,
+                                                                                   test_transform=self.test_transform,
+                                                                                   batch_size=self.BATCH_SIZE,
+                                                                                   num_workers=self.WORKERS)
+
+        self.model_0: models.CNNModel = models.CNNModel(input_neurons= 3,
+                                           num_hidden_layers= self.HIDDEN_LAYERS,
+                                           neurons_per_hidden_layer= self.NEURONS_PER_HIDDEN_LAYER,
+                                           output_neurons= len(self.classes),
+                                           output_block_divisor= 4,
+                                           image_size= self.image_size).to(self.device)
+
+        summary(self.model_0, input_size= (32, 3, self.image_size[0], self.image_size[1]))
+
+        self.LOSS_FN = torch.nn.CrossEntropyLoss()
+        self.OPTIMIZER = torch.optim.Adam(params=self.model_0.parameters(), lr=self.LEARNING_RATE)
+
+
+    def train(self):
+        print("Training begun")
+
+        start_time = timer()
+        results = engine.train(model=self.model_0,
+                               train_dataloader=self.train_dataloader,
+                               test_dataloader=self.test_dataloader,
+                               optimizer=self.OPTIMIZER,
+                               loss_fn=self.LOSS_FN,
+                               epochs=self.EPOCHS,
+                               device=self.device,
+                               early_stopping= EarlyStopping(0.01, 5))
+
+        print(f"Training finished | Runtime: {timer() - start_time}")
+        print(results)
+
+        utils.save_model(self.model_0,
+                   "/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/models",
+                   "model_0_train1.pt")
+
+
+
+
 
 
 def main():
+    print("Hello World")
+    trainer = Trainer(epochs= 30,
+                      batch_size= 32,
+                      hidden_layers= 1,
+                      neurons_per_hidden_layer= [128, 64, 32],
+                      leaning_rate= 0.0001)
+    trainer.train()
 
-    EPOCHS: int = 1
-    BATCH_SIZE: int = 32
-    HIDDEN_LAYERS: int = 1
-    NEURONS_PER_HIDDEN_LAYER: list[int] = [16, 16]
-    WORKERS = os.cpu_count()
-    LEARNING_RATE: float = 0.001
 
-    small_root_path = Path("/Users/eric/PycharmProjects/Intel_Natural_Scenes_Classification_nn/small_data")
-    small_train_path = small_root_path / "train"
-    small_test_path = small_root_path / "test"
 
-    print("Is CUDA available: ", torch.cuda.is_available())
-    print("Number of GPUs: ", torch.cuda.device_count())
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(device)
-
-    image_size: tuple[int, int] = (128, 128)
-    small_train_transform = transforms.Compose([
-        transforms.Resize(image_size),
-        transforms.ToTensor()
-    ])
-
-    small_test_transform = transforms.Compose([
-        transforms.Resize(image_size),
-        transforms.ToTensor()
-    ])
-
-    train_dataloader, test_dataloader, classes = data_setup.create_dataloaders(train_path= small_train_path,
-                                                                    test_path= small_test_path,
-                                                                    train_transform= small_train_transform,
-                                                                    test_transform= small_test_transform,
-                                                                    batch_size= BATCH_SIZE,
-                                                                    num_workers= WORKERS)
-
-    model_0: SmallModelCNN = models.SmallModelCNN(input_neurons= 3,
-                                           hidden_layers= HIDDEN_LAYERS,
-                                           neurons_per_hidden_layer= NEURONS_PER_HIDDEN_LAYER,
-                                           output_neurons= len(classes),
-                                           image_size= image_size)
-
-    LOSS_FN = torch.nn.CrossEntropyLoss()
-    OPTIMIZER = torch.optim.Adam(params= model_0.parameters(), lr= LEARNING_RATE)
-
-    print("training begun")
-    engine.train(model = model_0,
-                 train_dataloader= train_dataloader,
-                 test_dataloader= test_dataloader,
-                 optimizer= OPTIMIZER,
-                 loss_fn= LOSS_FN,
-                 epochs= EPOCHS,
-                 device= device)
-    print("training finished")
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
