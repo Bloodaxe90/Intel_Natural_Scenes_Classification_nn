@@ -2,7 +2,6 @@ import torch
 import numpy as np
 from PIL.Image import Image
 from torchvision import transforms
-import pathlib
 from pathlib import Path
 from PIL import Image
 from torch.utils.data import Dataset

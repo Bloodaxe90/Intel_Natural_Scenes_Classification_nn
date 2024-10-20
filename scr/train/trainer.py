@@ -5,16 +5,24 @@ import torch.cuda
 from torchinfo import summary
 from torchvision import transforms
 from timeit import default_timer as timer
-from scr import engine, data_setup, models, utils
-from scr.early_stopping import EarlyStopping
+from scr import data_setup, utils, models
+from scr.data_setup.dataloader_setup import create_dataloaders
+from scr.engine.train import train
+from scr.utils.early_stopping import EarlyStopping
+from scr.utils.other import set_seed, get_device
 
 
 class Trainer:
 
-    def __init__(self, epochs: int, batch_size: int, hidden_layers: int, neurons_per_hidden_layer: list[int], leaning_rate: float):
-        utils.set_seed(42)
+    def __init__(self, epochs: int,
+                 batch_size: int,
+                 hidden_layers: int,
+                 neurons_per_hidden_layer: list[int],
+                 leaning_rate: float
+                 ):
+        set_seed(42)
 
-        self.device = utils.get_device()
+        self.device = get_device()
         print(f"Device: {self.device}")
 
         #Hyper Parameters
@@ -44,14 +52,14 @@ class Trainer:
         train_path = root_path / "seg_train/seg_train"
         test_path = root_path / "seg_test/seg_test"
 
-        self.train_dataloader, self.test_dataloader, self.classes = data_setup.create_dataloaders(train_path= train_path,
+        self.train_dataloader, self.test_dataloader, self.classes = create_dataloaders(train_path= train_path,
                                                                                    test_path=test_path,
                                                                                    train_transform= self.train_transform,
                                                                                    test_transform=self.test_transform,
                                                                                    batch_size=self.BATCH_SIZE,
                                                                                    num_workers=self.WORKERS)
 
-        self.model_0: models.CNNModel = models.CNNModel(input_neurons= 3,
+        self.model_0: models.cnn_model.CNNModel = models.cnn_model.CNNModel(input_neurons= 3,
                                            num_hidden_layers= self.HIDDEN_LAYERS,
                                            neurons_per_hidden_layer= self.NEURONS_PER_HIDDEN_LAYER,
                                            output_neurons= len(self.classes),
@@ -64,11 +72,11 @@ class Trainer:
         self.OPTIMIZER = torch.optim.Adam(params=self.model_0.parameters(), lr=self.LEARNING_RATE)
 
 
-    def train(self):
+    def train(self, save: bool):
         print("Training begun")
 
         start_time = timer()
-        results = engine.train(model=self.model_0,
+        results = train(model=self.model_0,
                                train_dataloader=self.train_dataloader,
                                test_dataloader=self.test_dataloader,
                                optimizer=self.OPTIMIZER,
@@ -80,32 +88,7 @@ class Trainer:
         print(f"Training finished | Runtime: {timer() - start_time}")
         print(results)
 
-        utils.save_model(self.model_0,
-                   "/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/models",
-                   "model_0_train1.pt")
-
-
-
-
-
-
-def main():
-    print("Hello World")
-    trainer = Trainer(epochs= 30,
-                      batch_size= 32,
-                      hidden_layers= 1,
-                      neurons_per_hidden_layer= [128, 64, 32],
-                      leaning_rate= 0.0001)
-    trainer.train()
-
-
-
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-
-
+        if save:
+            utils.save_load.save_model(self.model_0,
+                    "/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/saved_models",
+                    "model_0_train1_aug.pt")
