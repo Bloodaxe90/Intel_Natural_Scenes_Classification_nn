@@ -27,63 +27,55 @@ In addition to the model, I implemented early stopping, a custom dataset class, 
 <ol>
   <li>Activate a virtual environment.</li>
   <li>Run <code>pip install -r requirements.txt</code> to install the dependencies.</li>
-  <li>Download the <a href="https://www.kaggle.com/datasets/puneet6060/intel-image-classification">Intel Image Classification</a> dataset from kaggle and add it to the main directory of the project</li>
-  <li>Run <code>Initial</code>.</li>
+  <li>Download the <a href="https://www.kaggle.com/datasets/puneet6060/intel-image-classification">Intel Image Classification</a> dataset from Kaggle and place it in the main directory of the project.</li>
+  <li>Run <code>initial_setup.py</code> to prepare the dataset and directories.</li>
+  <li>Run <code>main.py</code> to train and evaluate the model.</li>
 </ol>
 
-<h2>Hyperparameters:</h2>
-<p>All can be found in <code>QLearning</code></p>
-<ul>
-  <li><code>GAMMA</code> (float): Discount factor</li>
-  <li><code>MAX_ALPHA</code> (float): Initial learning rate</li>
-  <li><code>MIN_ALPHA</code> (float): Minimum learning rate</li>
-  <li><code>MAX_EPSILON</code> (float): Initial exploration rate</li>
-  <li><code>MIN_EPSILON</code> (float): Minimum exploration rate</li>
-  <li><code>LAMBDA</code> (float): Decay rate for eligibility trace</li>
-</ul>
 
-<h2>Controls:</h2>
-<p>
-  Its TicTacToe!
-</p>
+<h2>Hyperparameters:</h2>
+<p>All hyperparameters can be found in <code>main.py</code>.</p>
 <ul>
-    <li><strong>Mouse Click:</strong> Places a piece</li>
-    <li><strong>Radio Buttons:</strong>
-      <ol>
-        <li>Playing against another player </li>
-        <li>Playing against the Minimax AI </li>
-        <li>Playing against the Q-Learning Agent</li>
-      </ol>
-    </li>
-    <li><strong>Train Button:</strong> Trains the AI for the input number of episodes (Disables everything until training is over (Multi-processing not implemented))</li>
+  <li><code>INFERENCE</code> (bool): Enables inference mode. (I hadn't yet discovered Jupyter Notebooks.)</li>
+  <li><code>EPOCHS</code> (int): Number of training epochs.</li>
+  <li>
+    <code>NEURONS_PER_HIDDEN_LAYER</code> (list[int]): Defines the number of neurons in each hidden layer. 
+    The number of hidden layers is <code>len(NEURONS_PER_HIDDEN_LAYER) - 1</code>. 
+    For example, <code>[128, 64, 32]</code> gives two hidden layers: the first with 128 input and 64 output neurons, 
+    and the second with 64 input and 32 output neurons.
+  </li>
+  <li><code>LEARNING_RATE</code> (float): Learning rate used by the optimizer.</li>
+  <li><code>PATIENCE</code> (int): Number of epochs to wait for a significant improvement (as defined by <code>MIN_DELTA</code>) before early stopping is triggered.</li>
+  <li><code>MIN_DELTA</code> (float): Minimum improvement in validation loss required to be seen as progress.</li>
+  <li><code>NEW_MODEL_NAME</code> (str): Name of a new/existing model you want to train.</li>
+  <li><code>LOAD_MODEL_NAME</code> (str): Name of an existing model to load for inference.</li>
 </ul>
 
 <h2>Results:</h2>
 <p>
-After training for 1 million episodes (which I understand is an unnecessary amount, but I wanted to make 100% sure the agents learned the target policy) the Q-Learning agent successfully learned how to consistently win or draw against me player.
+After training with early stopping for 30 epochs the model learnt to successfully classify the test data.
 </p>
 <p>
-<strong>Below are some of the statistics from training:</strong>
+<strong>Below are some statistics of the models training results:</strong>
 <ul>
+  <li>
+
+![myplot](https://github.com/user-attachments/assets/02ebbda2-2be8-4520-a322-8dbba2541679)
+  </br> Some of the trained models predictions on 9 random images from the test data
+  </li>
+  <li>
+
+![plot_2025-06-02 15-00-50_2](https://github.com/user-attachments/assets/a526b11b-f743-4844-93c6-6ecbeeebff35)
+  </br> Confusion matrix of the trained models perfomance on the test data
+  </li>
   <li>  
-    
-  ![image](https://github.com/user-attachments/assets/17981ef4-e450-458b-8a56-c2cbd325f7ef)
-  </br> In the above image you can see that eventually the agents began drawing more than they won against one another
-  </li>
-  <li>
-    
-  ![image](https://github.com/user-attachments/assets/3c124e79-783b-4603-9e02-942ef915e6a2)
-  </br> In the above image you can see how the learning rate and exploration rate decay with each cumulative eisode
-  </li>
-  <li>
-    
-  ![image](https://github.com/user-attachments/assets/59207f7c-db7e-4c4c-9ec9-d1d1f091c79e)
-  </br> In the above image you can see that very quickly the agents discover close to all possible state-action pairs which is expected due to TicTacToes small state-action space
+
+![plot_2025-06-02 15-00-50_0](https://github.com/user-attachments/assets/851a50d3-3d5c-499d-b3d9-ba4c333ea431)
+  </br> The train and test loss and accuracy during training 
   </li>
 </ul>
 </p>
 
-Finally here is a screenshot of the final UI
-![image](https://github.com/user-attachments/assets/662e8790-f892-4a0b-8b14-23d18383277a)
+
 
 
