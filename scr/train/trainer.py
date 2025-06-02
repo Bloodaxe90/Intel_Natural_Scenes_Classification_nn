@@ -65,11 +65,12 @@ class Trainer:
                                                                                    batch_size=self.BATCH_SIZE,
                                                                                    num_workers=self.WORKERS)
 
-        self.model_0: models.cnn_model.CNNModel = models.cnn_model.CNNModel(input_neurons= 3,
-                                           neurons_per_hidden_layer= self.NEURONS_PER_HIDDEN_LAYER,
-                                           output_neurons= len(self.classes),
-                                           output_block_divisor= 4,
-                                           image_size= self.image_size).to(self.device)
+        self.model_0: models.cnn_model.CNNModel = models.cnn_model.CNNModel(
+            input_channels= 3,
+            neurons_per_hidden_layer= self.NEURONS_PER_HIDDEN_LAYER,
+            output_channels= len(self.classes),
+            output_block_divisor= 4,
+            image_size= self.image_size).to(self.device)
 
         summary(self.model_0, input_size= (32, 3, self.image_size[0], self.image_size[1]))
 

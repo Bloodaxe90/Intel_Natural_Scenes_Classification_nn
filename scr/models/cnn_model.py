@@ -1,7 +1,7 @@
 from torch import nn
 
 class CNNModel(nn.Module):
-  def __init__(self, input_neurons: int, neurons_per_hidden_layer: list[int], output_neurons: int, output_block_divisor: int, image_size: tuple[int, int]):
+  def __init__(self, input_channels: int, neurons_per_hidden_layer: list[int], output_channels: int, output_block_divisor: int, image_size: tuple[int, int]):
     super().__init__()
     assert len(neurons_per_hidden_layer) >= 1, "Neurons per hidden layer must have at least on element"
     
@@ -9,7 +9,7 @@ class CNNModel(nn.Module):
     self.neurons_per_hidden_layer = neurons_per_hidden_layer
 
     self.input_conv_block = nn.Sequential(
-        nn.Conv2d(in_channels= input_neurons, out_channels=self.neurons_per_hidden_layer[0], kernel_size= 3, stride= 1, padding= 1),
+        nn.Conv2d(in_channels= input_channels, out_channels=self.neurons_per_hidden_layer[0], kernel_size= 3, stride= 1, padding= 1),
         nn.BatchNorm2d(self.neurons_per_hidden_layer[0]),
         nn.ReLU(),
         nn.MaxPool2d(kernel_size= 2, stride= 2)
@@ -36,7 +36,7 @@ class CNNModel(nn.Module):
     )
 
     self.output_block = nn.Sequential(
-        nn.Linear(in_features=flatten_out_neurons, out_features=output_neurons),
+        nn.Linear(in_features=flatten_out_neurons, out_features=output_channels),
         nn.Softmax(dim=1)
     )
 
