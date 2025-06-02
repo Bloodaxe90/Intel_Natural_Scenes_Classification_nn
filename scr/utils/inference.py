@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pandas as pd
 import torch
@@ -42,26 +40,6 @@ def plot_results(result: pd.DataFrame):
     fig.suptitle("Training and Testing Metrics Over Epochs", fontsize=16)
     fig.tight_layout(rect=[0, 0.03, 1, 0.97])
     plt.show()
-
-def save_results(results: pd.DataFrame, model_name: str):
-    log_dir = f"{os.path.dirname(os.getcwd())}/logs"
-
-    os.makedirs(log_dir, exist_ok=True)
-    if ".csv" not in model_name:
-        model_name += ".csv"
-
-    results.to_csv(f"{log_dir}/{model_name}", index=False)
-    print(f"Saved {model_name} in directory: {log_dir}")
-
-def load_results(model_name: str) -> pd.DataFrame:
-    log_dir = f"{os.path.dirname(os.getcwd())}/logs"
-
-    os.makedirs(log_dir, exist_ok=True)
-
-    if ".csv" not in model_name:
-        model_name += ".csv"
-    print(f"Loaded {model_name} from directory: {log_dir}")
-    return pd.read_csv(f"{log_dir}/{model_name}")
 
 def get_pred_and_labels(model: nn.Module, data_loaders: DataLoader, device) -> tuple[list[int], list[int]]:
     y_pred = []

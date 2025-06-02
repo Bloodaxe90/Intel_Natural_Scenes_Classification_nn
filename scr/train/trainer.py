@@ -5,11 +5,11 @@ import torch.cuda
 from torchinfo import summary
 from torchvision import transforms
 from timeit import default_timer as timer
-from scr import data_setup, utils, models
+from scr import utils, models
 from scr.data_setup.dataloader_setup import create_dataloaders
 from scr.engine.train import train
 from scr.utils.early_stopping import EarlyStopping
-from scr.utils.inference import save_results
+from scr.utils.save_load import save_results
 from scr.utils.other import set_seed, get_device
 
 
@@ -66,7 +66,7 @@ class Trainer:
                                            num_hidden_layers= self.HIDDEN_LAYERS,
                                            neurons_per_hidden_layer= self.NEURONS_PER_HIDDEN_LAYER,
                                            output_neurons= len(self.classes),
-                                           output_block_divisor= 8,
+                                           output_block_divisor= 4,
                                            image_size= self.image_size).to(self.device)
 
         summary(self.model_0, input_size= (32, 3, self.image_size[0], self.image_size[1]))
@@ -92,7 +92,5 @@ class Trainer:
         print(results)
 
         if self.MODEL_NAME != "":
-            utils.save_load.save_model(self.model_0,
-                    f"{os.path.dirname(os.getcwd())}/saved_models",
-                    self.MODEL_NAME)
+            utils.save_load.save_model(self.model_0,self.MODEL_NAME)
         save_results(results, self.MODEL_NAME)

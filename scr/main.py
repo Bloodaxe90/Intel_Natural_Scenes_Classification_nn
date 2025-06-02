@@ -1,9 +1,7 @@
-import os
-
 from scr.train.trainer import Trainer
-from scr.utils.inference import show_confusion_matrix, load_results, \
+from scr.utils.inference import show_confusion_matrix, \
     plot_results, get_pred_and_labels, show_predictions
-from scr.utils.save_load import load_model
+from scr.utils.save_load import load_model, load_results
 from sklearn.metrics import confusion_matrix
 
 
@@ -15,26 +13,26 @@ def main():
     HIDDEN_LAYERS: int = 2
     NEURONS_PER_HIDDEN_LAYER: list = [128, 64, 32]
     LEARNING_RATE: float = 0.0001
-    MODEL_NAME: str = "test"
+    NEW_MODEL_NAME: str = "test"
 
     # Specific for INFERENCE
-    MODEL: str = "model_0_train1.pt"
+    LOAD_MODEL_NAME: str = "model_0_train1"
 
     trainer = Trainer(epochs= EPOCHS,
                       batch_size= BATCH_SIZE,
                       hidden_layers= HIDDEN_LAYERS,
                       neurons_per_hidden_layer= NEURONS_PER_HIDDEN_LAYER,
                       leaning_rate= LEARNING_RATE,
-                      model_name=MODEL_NAME)
+                      model_name=NEW_MODEL_NAME)
     if not INFERENCE:
         trainer.train()
     else:
         print("INFERENCE")
         loaded_model = load_model(trainer.model_0,
-                                  f"{os.path.dirname(os.getcwd())}/saved_models/{MODEL}",
+                                  LOAD_MODEL_NAME,
                                   trainer.device)
 
-        results = load_results(MODEL_NAME)
+        results = load_results(LOAD_MODEL_NAME)
 
         plot_results(results)
 
