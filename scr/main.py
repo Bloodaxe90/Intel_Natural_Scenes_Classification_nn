@@ -13,6 +13,8 @@ def main():
     HIDDEN_LAYERS: int = 2
     NEURONS_PER_HIDDEN_LAYER: list = [128, 64, 32]
     LEARNING_RATE: float = 0.0001
+    PATIENCE: int = 5
+    MIN_DELTA: float = 0.01
     NEW_MODEL_NAME: str = "test"
 
     # Specific for INFERENCE
@@ -23,6 +25,8 @@ def main():
                       hidden_layers= HIDDEN_LAYERS,
                       neurons_per_hidden_layer= NEURONS_PER_HIDDEN_LAYER,
                       leaning_rate= LEARNING_RATE,
+                      patience= PATIENCE,
+                      min_delta= MIN_DELTA,
                       model_name=NEW_MODEL_NAME)
     if not INFERENCE:
         trainer.train()

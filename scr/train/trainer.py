@@ -20,7 +20,10 @@ class Trainer:
                  hidden_layers: int,
                  neurons_per_hidden_layer: list[int],
                  leaning_rate: float,
-                 model_name: str = ""
+                 patience: int = 5,
+                 min_delta: float = 0.01,
+                 model_name: str = "",
+                 image_size: tuple = (128, 128)
                  ):
         set_seed(42)
 
@@ -34,7 +37,9 @@ class Trainer:
         self.HIDDEN_LAYERS: int = hidden_layers
         self.NEURONS_PER_HIDDEN_LAYER: list[int] = neurons_per_hidden_layer
         self.LEARNING_RATE: float = leaning_rate
-        self.image_size: tuple = (128, 128)
+        self.MIN_DELTA: float = min_delta
+        self.PATIENCE: int = patience
+        self.image_size: tuple = image_size
 
 
         self.WORKERS = os.cpu_count()
@@ -86,7 +91,7 @@ class Trainer:
                                loss_fn=self.LOSS_FN,
                                epochs=self.EPOCHS,
                                device=self.device,
-                               early_stopping= EarlyStopping(0.01, 5))
+                               early_stopping= EarlyStopping(self.MIN_DELTA, self.PATIENCE))
 
         print(f"Training finished | Runtime: {timer() - start_time}")
         print(results)
