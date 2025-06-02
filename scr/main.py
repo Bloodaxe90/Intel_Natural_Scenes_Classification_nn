@@ -10,7 +10,6 @@ def main():
 
     EPOCHS: int = 30
     BATCH_SIZE: int = 32
-    HIDDEN_LAYERS: int = 2
     NEURONS_PER_HIDDEN_LAYER: list = [128, 64, 32]
     LEARNING_RATE: float = 0.0001
     PATIENCE: int = 5
@@ -22,7 +21,6 @@ def main():
 
     trainer = Trainer(epochs= EPOCHS,
                       batch_size= BATCH_SIZE,
-                      hidden_layers= HIDDEN_LAYERS,
                       neurons_per_hidden_layer= NEURONS_PER_HIDDEN_LAYER,
                       leaning_rate= LEARNING_RATE,
                       patience= PATIENCE,

@@ -17,7 +17,6 @@ class Trainer:
 
     def __init__(self, epochs: int,
                  batch_size: int,
-                 hidden_layers: int,
                  neurons_per_hidden_layer: list[int],
                  leaning_rate: float,
                  patience: int = 5,
@@ -34,7 +33,6 @@ class Trainer:
         #Hyper Parameters
         self.EPOCHS: int = epochs
         self.BATCH_SIZE: int = batch_size
-        self.HIDDEN_LAYERS: int = hidden_layers
         self.NEURONS_PER_HIDDEN_LAYER: list[int] = neurons_per_hidden_layer
         self.LEARNING_RATE: float = leaning_rate
         self.MIN_DELTA: float = min_delta
@@ -68,7 +66,6 @@ class Trainer:
                                                                                    num_workers=self.WORKERS)
 
         self.model_0: models.cnn_model.CNNModel = models.cnn_model.CNNModel(input_neurons= 3,
-                                           num_hidden_layers= self.HIDDEN_LAYERS,
                                            neurons_per_hidden_layer= self.NEURONS_PER_HIDDEN_LAYER,
                                            output_neurons= len(self.classes),
                                            output_block_divisor= 4,

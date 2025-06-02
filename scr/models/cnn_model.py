@@ -1,10 +1,11 @@
 from torch import nn
 
 class CNNModel(nn.Module):
-  def __init__(self, input_neurons: int, num_hidden_layers: int, neurons_per_hidden_layer: list[int], output_neurons: int, output_block_divisor: int, image_size: tuple[int, int]):
+  def __init__(self, input_neurons: int, neurons_per_hidden_layer: list[int], output_neurons: int, output_block_divisor: int, image_size: tuple[int, int]):
     super().__init__()
-    assert num_hidden_layers +1 == len(neurons_per_hidden_layer), "Number of items in the list of neurons per hidden layer must be 1 greater than the number hidden layers"
-
+    assert len(neurons_per_hidden_layer) >= 1, "Neurons per hidden layer must have at least on element"
+    
+    num_hidden_layers = len(neurons_per_hidden_layer) - 1
     self.neurons_per_hidden_layer = neurons_per_hidden_layer
 
     self.input_conv_block = nn.Sequential(
