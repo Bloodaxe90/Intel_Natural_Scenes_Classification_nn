@@ -38,6 +38,7 @@ In addition to the model, I implemented early stopping, a custom dataset class, 
 <ul>
   <li><code>INFERENCE</code> (bool): Enables inference mode. (I hadn't yet discovered Jupyter Notebooks.)</li>
   <li><code>EPOCHS</code> (int): Number of training epochs.</li>
+  <li><code>BATCH_SIZE</code> (int)</li>
   <li>
     <code>NEURONS_PER_HIDDEN_LAYER</code> (list[int]): Defines the number of neurons in each hidden layer. 
     The number of hidden layers is <code>len(NEURONS_PER_HIDDEN_LAYER) - 1</code>. 
