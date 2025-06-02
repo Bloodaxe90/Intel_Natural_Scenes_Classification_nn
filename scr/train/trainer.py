@@ -9,6 +9,7 @@ from scr import data_setup, utils, models
 from scr.data_setup.dataloader_setup import create_dataloaders
 from scr.engine.train import train
 from scr.utils.early_stopping import EarlyStopping
+from scr.utils.inference import save_results
 from scr.utils.other import set_seed, get_device
 
 
@@ -18,11 +19,13 @@ class Trainer:
                  batch_size: int,
                  hidden_layers: int,
                  neurons_per_hidden_layer: list[int],
-                 leaning_rate: float
+                 leaning_rate: float,
+                 model_name: str = ""
                  ):
         set_seed(42)
 
         self.device = get_device()
+        self.MODEL_NAME = model_name
         print(f"Device: {self.device}")
 
         #Hyper Parameters
@@ -31,11 +34,11 @@ class Trainer:
         self.HIDDEN_LAYERS: int = hidden_layers
         self.NEURONS_PER_HIDDEN_LAYER: list[int] = neurons_per_hidden_layer
         self.LEARNING_RATE: float = leaning_rate
+        self.image_size: tuple = (128, 128)
 
 
-        self.WORKERS = os.cpu_count() if self.device == "cpu" else torch.cuda.device_count()
+        self.WORKERS = os.cpu_count()
         print(f"Number of workers: {self.WORKERS}")
-        self.image_size: tuple[int, int] = (128, 128)
 
         self.train_transform = transforms.Compose([
             transforms.Resize(self.image_size),
@@ -48,7 +51,7 @@ class Trainer:
         ])
 
         root_path = Path(
-            "/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/data")
+            f"{os.path.dirname(os.getcwd())}/data")
         train_path = root_path / "seg_train/seg_train"
         test_path = root_path / "seg_test/seg_test"
 
@@ -63,7 +66,7 @@ class Trainer:
                                            num_hidden_layers= self.HIDDEN_LAYERS,
                                            neurons_per_hidden_layer= self.NEURONS_PER_HIDDEN_LAYER,
                                            output_neurons= len(self.classes),
-                                           output_block_divisor= 4,
+                                           output_block_divisor= 8,
                                            image_size= self.image_size).to(self.device)
 
         summary(self.model_0, input_size= (32, 3, self.image_size[0], self.image_size[1]))
@@ -72,7 +75,7 @@ class Trainer:
         self.OPTIMIZER = torch.optim.Adam(params=self.model_0.parameters(), lr=self.LEARNING_RATE)
 
 
-    def train(self, save: bool):
+    def train(self):
         print("Training begun")
 
         start_time = timer()
@@ -88,7 +91,8 @@ class Trainer:
         print(f"Training finished | Runtime: {timer() - start_time}")
         print(results)
 
-        if save:
+        if self.MODEL_NAME != "":
             utils.save_load.save_model(self.model_0,
-                    "/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/saved_models",
-                    "model_0_train1_aug.pt")
+                    f"{os.path.dirname(os.getcwd())}/saved_models",
+                    self.MODEL_NAME)
+        save_results(results, self.MODEL_NAME)

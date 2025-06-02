@@ -10,7 +10,6 @@ def train_step(model: nn.Module,
   model.train()
 
   train_loss, train_acc = 0, 0
-
   for batch in dataloader:
     X, y = batch
     X, y = X.to(device), y.to(device)

@@ -34,6 +34,7 @@ def train(model: nn.Module,
 
       results.loc[len(results)] = [epoch +1, train_loss, train_acc, test_loss, test_acc]
 
+
       if early_stopping is not None:
           if early_stopping(test_loss):
               print(f"Early Stopping Triggered at Epoch: {epoch}")

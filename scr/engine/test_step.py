@@ -9,7 +9,6 @@ def test_step(model: nn.Module,
   model.eval()
 
   test_loss, test_acc = 0, 0
-
   with torch.inference_mode():
     for batch in dataloader:
       X, y = batch

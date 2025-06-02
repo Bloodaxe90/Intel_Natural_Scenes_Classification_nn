@@ -3,13 +3,14 @@ import shutil
 from pathlib import Path
 import zipfile
 
-def load_init_files():
+def load_init_files(smaller_set_num_classes: int  = -1):
     root_path = Path(
-        "/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/data/IntelImageClassification.zip")
-    extract_path = Path("/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/data")
+        f"{os.path.dirname(os.path.dirname(os.getcwd()))}/IntelImageClassification.zip")
+    extract_path = Path(f"{os.path.dirname(os.path.dirname(os.getcwd()))}/data")
 
     expands_zip(root_path, extract_path)
-    get_smaller_set(extract_path, "jpg", 4)
+    if smaller_set_num_classes > 0:
+        get_smaller_set(extract_path, "jpg", smaller_set_num_classes)
 
 def expands_zip(zip_path: Path, extract_path: Path):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -26,7 +27,7 @@ def copy_images(image_dir: Path, dest_dir: Path, file_type: str, num_classes: in
 
 
 def get_smaller_set(root_dir: Path, file_type: str, num_classes: int) -> Path:
-  new_root_dir = Path("/shared/storage/cs/studentscratch/kkf525/PyCharm_Projects/Intel_Natural_Scenes_Classification_nn/small_data")
+  new_root_dir = Path(f"{os.path.dirname(os.path.dirname(os.getcwd()))}/small_data")
   train_dir = new_root_dir / "train"
   test_dir = new_root_dir / "test"
   prediction_dir = new_root_dir / "pred"
@@ -40,3 +41,5 @@ def get_smaller_set(root_dir: Path, file_type: str, num_classes: int) -> Path:
       shutil.copy2(image, prediction_dir)
 
   return new_root_dir
+
+load_init_files()
